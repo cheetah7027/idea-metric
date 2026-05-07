@@ -323,4 +323,26 @@
   .card {
     padding: 24px;
   }
+  
+  .sticky-col-left {
+    width: 140px;
+    min-width: 140px;
+  }
+  
+  .factor-desc {
+    display: none;
+  }
+  
+  .factor-title {
+    font-size: 0.95rem;
+  }
+  
+  .comparison-table th,
+  .comparison-table td {
+    padding: 16px 12px;
+  }
+  
+  .sticky-col-left.factor-header {
+    font-size: 1rem;
+  }
 }
