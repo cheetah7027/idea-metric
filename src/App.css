@@ -346,3 +346,21 @@
     font-size: 1rem;
   }
 }
+
+/* AI Shimmer Loading Animation */
+@keyframes shimmer {
+  0% { background-position: -468px 0; }
+  100% { background-position: 468px 0; }
+}
+
+.loading-shimmer > div {
+  background-image: linear-gradient(to right, var(--bg-color) 0%, rgba(123, 140, 115, 0.1) 20%, var(--bg-color) 40%, var(--bg-color) 100%);
+  background-repeat: no-repeat;
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear forwards;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { factors } from '../data/factors';
+import { generateAIEvaluation } from '../services/aiService';
 
 const initialScores = factors.reduce((acc, factor) => {
   acc[factor.id] = 5; // Default score of 5 for everything
@@ -14,16 +15,25 @@ export function useEvaluation() {
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
   // Add a new idea
-  const addIdea = useCallback((name = '', description = '') => {
+  const addIdea = useCallback((details) => {
+    const { name = '', description = '', targetAudience = '', businessModel = '', competitors = '', geography = '' } = details || {};
     const newIdea = {
       id: generateId(),
       name: name || `Idea ${ideas.length + 1}`,
       description,
-      scores: { ...initialScores }
+      targetAudience,
+      businessModel,
+      competitors,
+      geography,
+      scores: { ...initialScores },
+      aiScores: null,
+      reasonings: null,
+      aiInsights: null,
+      isEvaluating: false
     };
     setIdeas(prev => [...prev, newIdea]);
-    return newIdea.id;
-  }, [ideas]);
+    return newIdea;
+  }, [ideas.length]);
 
   // Remove an idea
   const removeIdea = useCallback((id) => {
@@ -56,6 +66,49 @@ export function useEvaluation() {
       return idea;
     }));
   }, []);
+
+  // Generate AI Evaluation for an idea
+  const generateEvaluationForIdea = useCallback(async (ideaId, fallbackIdea) => {
+    // Set isEvaluating to true
+    setIdeas(prev => prev.map(idea => 
+      idea.id === ideaId ? { ...idea, isEvaluating: true } : idea
+    ));
+
+    // Get idea details - use fallback if state hasn't updated yet
+    const ideaToEvaluate = fallbackIdea || ideas.find(i => i.id === ideaId);
+    if (!ideaToEvaluate) {
+      console.error("Idea not found for evaluation", ideaId);
+      return;
+    }
+
+    try {
+      const evaluation = await generateAIEvaluation(ideaToEvaluate, factors);
+      
+      setIdeas(prev => prev.map(idea => {
+        if (idea.id === ideaId) {
+          return {
+            ...idea,
+            name: evaluation.deducedContext?.suggestedName || idea.name,
+            targetAudience: evaluation.deducedContext?.targetAudience || idea.targetAudience,
+            businessModel: evaluation.deducedContext?.businessModel || idea.businessModel,
+            competitors: evaluation.deducedContext?.competitors || idea.competitors,
+            geography: evaluation.deducedContext?.geography || idea.geography,
+            scores: { ...evaluation.scores }, // Initialize manual scores with AI scores
+            aiScores: evaluation.scores,
+            reasonings: evaluation.reasonings,
+            aiInsights: evaluation.insights,
+            isEvaluating: false
+          };
+        }
+        return idea;
+      }));
+    } catch (error) {
+      console.error("Failed to generate evaluation", error);
+      setIdeas(prev => prev.map(idea => 
+        idea.id === ideaId ? { ...idea, isEvaluating: false } : idea
+      ));
+    }
+  }, [ideas]);
 
   // Navigation
   const nextStep = () => {
@@ -102,6 +155,7 @@ export function useEvaluation() {
     removeIdea,
     updateIdeaName,
     updateIdeaScore,
+    generateEvaluationForIdea,
     calculateTotal,
     getInterpretation,
     getInsights,
