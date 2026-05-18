@@ -20,7 +20,14 @@ Error generating stack: `+e.message+`
 Idea Details:
 - Description: ${e.description||`Not provided`}
 
-Based strictly on the description, deduce and infer the target audience, business model, likely competitors, and target geography. Then, evaluate this idea against the following ${t.length} factors.
+GUARDRAIL INSTRUCTION: First, determine if the provided description describes a plausible product, service, or business idea. If the description is clearly NOT a business idea (e.g. it is just a raw URL like localhost, a random string of characters, test data like "asdf", or a completely unrelated phrase), you MUST:
+- Set suggestedName to "Invalid Idea"
+- Set all other deducedContext fields to "N/A"
+- Score all factors as 1
+- Set all reasonings to: "The provided description does not appear to be a valid business or product idea. Please provide a clearer description."
+- Set all insight fields to "N/A"
+
+If it IS a valid business idea, based strictly on the description, deduce and infer the target audience, business model, likely competitors, and target geography. Then, evaluate this idea against the following ${t.length} factors.
 Factors:
 ${t.map(e=>`- ${e.title}: ${e.description}`).join(`
 `)}
