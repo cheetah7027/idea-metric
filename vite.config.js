@@ -3,6 +3,6 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/idea-metric/',
+  base: process.env.VERCEL ? '/' : '/idea-metric/',
   plugins: [react()],
 })
