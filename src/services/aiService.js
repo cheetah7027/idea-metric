@@ -16,14 +16,11 @@ export async function generateAIEvaluation(ideaDetails, factors) {
 Idea Details:
 - Description: ${ideaDetails.description || 'Not provided'}
 
-GUARDRAIL INSTRUCTION: First, determine if the provided description describes a plausible product, service, or business idea. If the description is clearly NOT a business idea (e.g. it is just a raw URL like localhost, a random string of characters, test data like "asdf", or a completely unrelated phrase), you MUST:
-- Set suggestedName to "Invalid Idea"
-- Set all other deducedContext fields to "N/A"
-- Score all factors as 1
-- Set all reasonings to: "The provided description does not appear to be a valid business or product idea. Please provide a clearer description."
-- Set all insight fields to "N/A"
+GUARDRAIL INSTRUCTION: First, determine if the provided description describes a plausible product, service, or business idea. If the description is clearly NOT a business idea (e.g. it is just a raw URL, a random string of characters, test data, or just a person's name like "ashwani"), you MUST:
+- Set "isValidIdea" to false.
+- Leave all other fields empty or 0. DO NOT evaluate it.
 
-If it IS a valid business idea, based strictly on the description, deduce and infer the target audience, business model, likely competitors, and target geography. Then, evaluate this idea against the following ${factors.length} factors.
+If it IS a valid business idea, set "isValidIdea" to true, and based strictly on the description, deduce and infer the target audience, business model, likely competitors, and target geography. Then, evaluate this idea against the following ${factors.length} factors.
 Factors:
 ${factors.map(f => `- ${f.title}: ${f.description}`).join('\n')}
 
@@ -31,6 +28,7 @@ For each factor, provide a score from 1 to 10 (10 being the absolute best, most 
 
 Provide the response as a JSON object matching this schema:
 {
+  "isValidIdea": boolean,
   "deducedContext": {
     "suggestedName": string (catchy, brandable startup name based on description),
     "targetAudience": string (short description),
@@ -84,6 +82,7 @@ function generateMockEvaluation(ideaDetails, factors) {
       });
 
       resolve({
+        isValidIdea: true,
         deducedContext: {
           suggestedName: ["SynergyAI", "Nexus Market", "Aura Insights", "PivotFlow", "Catalyst", "Nova Ventures"][Math.floor(Math.random() * 6)],
           targetAudience: "Small to medium businesses",

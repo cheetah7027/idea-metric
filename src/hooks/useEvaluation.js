@@ -84,6 +84,14 @@ export function useEvaluation() {
     try {
       const evaluation = await generateAIEvaluation(ideaToEvaluate, factors);
       
+      if (evaluation.isValidIdea === false) {
+        alert("The AI rejected this idea description: '" + ideaToEvaluate.description + "'. It does not appear to be a valid business or product concept. Please provide a clear startup idea.");
+        setIdeas(prev => prev.map(idea => 
+          idea.id === ideaId ? { ...idea, isEvaluating: false, description: '' } : idea
+        ));
+        return;
+      }
+      
       setIdeas(prev => prev.map(idea => {
         if (idea.id === ideaId) {
           return {
